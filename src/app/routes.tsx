@@ -1,10 +1,4 @@
-import {
-  Link,
-  Outlet,
-  createRootRoute,
-  createRoute,
-  type AnyRoute,
-} from "@tanstack/react-router";
+import { Link, Outlet, createRootRoute, createRoute } from "@tanstack/react-router";
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -19,32 +13,16 @@ const rootRoute = createRootRoute({
   ),
 });
 
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/",
-  component: () => <h1>App home</h1>,
-});
+// The one list of app routes. The router and the static build both read it.
+const appRoutes = [
+  { path: "/", component: () => <h1>App home</h1> },
+  { path: "/about", component: () => <p>This internal app runs on TanStack Router.</p> },
+];
 
-const aboutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/about",
-  component: () => <p>This internal app runs on TanStack Router.</p>,
-});
+export const routeTree = rootRoute.addChildren(
+  appRoutes.map(({ path, component }) => createRoute({ getParentRoute: () => rootRoute, path, component })),
+);
 
-export const routeTree = rootRoute.addChildren([indexRoute, aboutRoute]);
-
-// Every full path in the tree, built from each route's own path. The router sets fullPath
-// only once it starts up, and the static build runs before that.
-function allPaths(route: AnyRoute, parent = ""): string[] {
-  const { path: ownPath } = route.options as { path?: string };
-  const path = `${parent}/${ownPath ?? ""}`.replace(/\/+/g, "/").replace(/(.)\/$/, "$1");
-  return [path, ...((route.children ?? []) as AnyRoute[]).flatMap((child) => allPaths(child, path))];
-}
-
-// "/" is the /app shell itself, and dynamic segments like "$id" need params, so skip both.
-// Returns paths without the leading slash, e.g. "about".
-export function appPaths(): string[] {
-  return allPaths(routeTree)
-    .filter((path) => path !== "/" && !path.includes("$"))
-    .map((path) => path.slice(1));
-}
+// Paths the static build pre-renders, without the leading slash. "/" is the /app shell
+// itself, so it is skipped. Dynamic routes like "$id" can't be listed without params.
+export const appPaths = appRoutes.map(({ path }) => path).filter((path) => path !== "/").map((path) => path.slice(1));

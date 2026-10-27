@@ -6,7 +6,7 @@ import { appPaths } from "../../app/routes";
 export function getStaticPaths() {
   return [
     { params: { path: undefined } },
-    ...appPaths().map((path) => ({ params: { path } })),
+    ...appPaths.map((path) => ({ params: { path } })),
   ];
 }
 ---
