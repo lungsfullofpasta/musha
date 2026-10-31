@@ -1,0 +1,18 @@
+version: v2
+plugins:
+  # Go: message types and Connect handlers, written under gen/go.
+  - local: [go, tool, protoc-gen-go]
+    out: gen/go
+    opt: paths=source_relative
+  - local: [go, tool, protoc-gen-connect-go]
+    out: gen/go
+    opt: paths=source_relative
+  # TypeScript: message types, then TanStack Query hooks, written under src/gen.
+  - local: protoc-gen-es
+    out: src/gen
+    opt: target=ts
+  - local: protoc-gen-connect-query
+    out: src/gen
+    opt: target=ts
+inputs:
+  - directory: proto
